@@ -1,5 +1,9 @@
 # Remediation Workbench (version 10.14)
 
+
+[![Downloads](https://img.shields.io/github/downloads/MohdIliyas/CSU-Remediation-Workbench/total?color=2ea44f&label=Downloads&logo=github)](https://github.com/MohdIliyas/CSU-Remediation-Workbench/releases)
+
+
 The version number is shown at the top of every page of the app, and at http://localhost:8080/version.
 
 A small web app for the Center for eLearning. Upload a batch of PDFs and Word files, and it returns remediated files plus a checklist of what still needs a person. Everything runs on the machine hosting it. No file is sent to an outside service.
