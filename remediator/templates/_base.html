@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Remediation Workbench{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css', v=app_version) }}">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header class="site">
+  <div class="band"><div class="edge">
+    <a class="logo-link" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='csu-online-logo-white.svg', v=app_version) }}" alt="Cleveland State University, CSU Online, home of Remediation Workbench" width="96" height="88">
+    </a>
+    <a class="brand" href="{{ url_for('index') }}">Remediation Workbench</a>
+    <address class="contact">
+      <strong>Center for eLearning</strong><br>
+      Rhodes Tower, RT201<br>
+      Phone: <a href="tel:+12166873960">216.687.3960</a><br>
+      <a href="mailto:elearning@csuohio.edu">elearning@csuohio.edu</a>
+    </address>
+  </div></div>
+</header>
+<main id="main" class="wrap">
+{% block main %}{% endblock %}
+</main>
+<footer class="site"><div class="wrap">
+  <p>CSU Online · Center for eLearning · Cleveland State University</p>
+  <p class="version">Version {{ app_version }}</p>
+</div></footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>
