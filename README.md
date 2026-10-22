@@ -396,3 +396,24 @@ colour spaces (spot colours are matched by position only). TNTP Opportunity Myth
   labels ("#1") are found inside longer cells; uneven backgrounds and SmartArt use the same 35% margin rule; see-through
   backings remain the fallback for text on pictures.
 - Results: TNTP report 725 -> 0, Virtual Class Meeting 1 47 -> 0, Meeting 4 56 -> 0, quiz 10 -> 2.
+
+
+
+## License
+
+Copyright (c) 2026 Mohammed Iliyas Sanjamala. All rights reserved.
+
+Remediation Workbench is **free for personal and internal organizational use**, but it is **not open source**.
+You may install it, use it and change its configuration settings (passwords, ports, AI model), but you may not
+modify the source code, sell it, host it as a service or include it in a paid product without a written
+commercial license. See [LICENSE](LICENSE) for the full terms.
+
+When you use it, please credit: "Uses Remediation Workbench by Mohammed Iliyas Sanjamala".
+
+Third-party components remain under their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+For a commercial license, contact mohdiliyas83@outlook.com.
+
+## Acknowledgments
+
+Inspired by Arizona State University's open-source accessibility tool.
