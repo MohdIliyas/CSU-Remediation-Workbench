@@ -17,10 +17,13 @@
   <div class="up-drop">
   <label class="drop" id="drop">
     <svg class="drop-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-    <strong>Drop files here, or choose files</strong>
+    <strong>Drop files or a folder here, or choose files</strong>
     <small>Word, PowerPoint and PDF ({{ supported | join(', ') }}) · up to {{ max_mb }} MB per batch</small>
     <input type="file" name="files" id="files" multiple accept="{{ supported | join(',') }}" aria-describedby="picked">
   </label>
+  <p class="folder-pick"><button type="button" class="button secondary" id="folder-btn">Choose a folder</button>
+    <input type="file" id="folder" webkitdirectory directory multiple hidden>
+    <span id="folder-note" class="where" role="status" aria-live="polite"></span></p>
   <ul id="picked" aria-live="polite"></ul>
   </div>
 
@@ -182,7 +185,7 @@ function show() {
   picked.innerHTML = n ? `<li class="picked-head">${n} file${n > 1 ? 's' : ''} selected</li>` +
     fs.map((f, i) => { const [k, c] = kind(f.name); return `<li class="pick">
       <span class="badge-type ${c}" aria-hidden="true">${k}</span>
-      <span class="pick-txt"><span class="pick-name">${escHtml(f.name)}</span><span class="pick-size">${size(f.size)}</span></span>
+      <span class="pick-txt"><span class="pick-name">${escHtml(typeof relPath === 'function' ? relPath(f) : f.name)}</span><span class="pick-size">${size(f.size)}</span></span>
       <button type="button" class="link-btn" data-i="${i}" aria-label="Remove ${escHtml(f.name)}">Remove</button></li>`; }).join('') : '';
 }
 picked.addEventListener('click', e => {
@@ -197,7 +200,50 @@ picked.addEventListener('click', e => {
 input.addEventListener('change', show);
 ['dragenter', 'dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('dragging'); }));
 ['dragleave', 'drop'].forEach(e => drop.addEventListener(e, () => drop.classList.remove('dragging')));
-drop.addEventListener('drop', ev => { ev.preventDefault(); input.files = ev.dataTransfer.files; show(); });
+// ---- folders: pick one, or drop one (subfolders included); supported files join the list above
+const SUPPORTED = {{ supported | tojson }};
+const relPaths = new Map();                       // file -> path inside the folder, sent as its name
+const fileKey = f => `${f.name}|${f.size}|${f.lastModified}`;
+const relPath = f => relPaths.get(fileKey(f)) || f.name;
+const folderNote = document.getElementById('folder-note');
+function addFiles(pairs) {
+  const ok = pairs.filter(([f]) => SUPPORTED.includes('.' + f.name.split('.').pop().toLowerCase()));
+  const dt = new DataTransfer();
+  [...input.files].forEach(f => dt.items.add(f));
+  ok.forEach(([f, p]) => { dt.items.add(f); relPaths.set(fileKey(f), p); });
+  input.files = dt.files;
+  show();
+  const skipped = pairs.length - ok.length;
+  folderNote.textContent = `Added ${ok.length} file(s) from the folder` +
+    (skipped ? `; skipped ${skipped} other file(s) (only Word, PowerPoint and PDF are remediated).` : '.');
+}
+const folder = document.getElementById('folder');
+document.getElementById('folder-btn').addEventListener('click', () => folder.click());
+folder.addEventListener('change', () => {
+  addFiles([...folder.files].map(f => [f, f.webkitRelativePath || f.name]));
+  folder.value = '';
+});
+async function entryFiles(entry, path) {
+  if (entry.isFile) return new Promise(res => entry.file(f => res([[f, path + f.name]]), () => res([])));
+  if (!entry.isDirectory) return [];
+  const reader = entry.createReader(), all = [];
+  for (;;) {
+    const batch = await new Promise(res => reader.readEntries(res, () => res([])));
+    if (!batch.length) break;
+    all.push(...batch);
+  }
+  const nested = await Promise.all(all.map(e => entryFiles(e, path + entry.name + '/')));
+  return nested.flat();
+}
+drop.addEventListener('drop', async ev => {
+  ev.preventDefault();
+  const entries = [...(ev.dataTransfer.items || [])].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+  if (entries.some(e => e.isDirectory)) {          // a folder: walk it
+    addFiles((await Promise.all(entries.map(e => entryFiles(e, '')))).flat());
+    return;
+  }
+  input.files = ev.dataTransfer.files; show();     // plain files: as before
+});
 // one submit only: upload with progress, then open the batch
 let submitted = false;
 document.getElementById('upload-form').addEventListener('submit', e => {
@@ -227,7 +273,10 @@ document.getElementById('upload-form').addEventListener('submit', e => {
     submitted = false; start.disabled = false; start.textContent = 'Start remediation';
     note.textContent = 'The upload failed (connection lost?). Please try again.';
   };
-  xhr.send(new FormData(form));
+  const fd = new FormData(form);                   // folder files keep their folder path in the name
+  fd.delete('files');
+  [...input.files].forEach(f => fd.append('files', f, relPath(f)));
+  xhr.send(fd);
 });
 </script>
 {% endblock %}

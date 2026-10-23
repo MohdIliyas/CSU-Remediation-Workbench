@@ -23,6 +23,7 @@
 
 <div class="actions" id="bulk" hidden>
   <a class="button" href="{{ url_for('download_all', job_id=job.id) }}">Download all files and report (.zip)</a>
+  <a class="button secondary" href="{{ url_for('download_originals', job_id=job.id) }}">Download originals (.zip)</a>
   <a class="button secondary" href="{{ url_for('view_report', job_id=job.id) }}">Open report</a>
   <a class="button" id="alt-link" href="{{ url_for('alt_review', job_id=job.id) }}" hidden></a>
   <a class="button" id="hw-link" href="{{ url_for('hw_review', job_id=job.id) }}" hidden></a>
@@ -44,6 +45,7 @@
 const JOB = {{ job | tojson }};
 const API = "{{ url_for('job_json', job_id=job.id) }}";
 const FILE_URL = "{{ url_for('download_file', job_id=job.id, name='__N__') }}";
+const ORIG_URL = "{{ url_for('download_original', job_id=job.id, name='__N__') }}";
 const dur = sec => { sec = Math.round(sec || 0); if (sec < 60) return sec + ' s';
   const m = Math.floor(sec / 60), r = sec % 60; if (m < 60) return `${m} min ${String(r).padStart(2, '0')} s`;
   return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`; };
@@ -70,6 +72,14 @@ function fileCard(f, n) {
   if (f.outputs.length) {
     html += `<ul class="downloads">` + f.outputs.map((o, k) =>
       `<li><a class="button ${k ? 'secondary' : ''}" href="${FILE_URL.replace('__N__', encodeURIComponent(o))}">Download ${esc(o)}</a></li>`).join('') + `</ul>`;
+    // the original, to compare with the remediated file
+    const orig = ORIG_URL.replace('__N__', encodeURIComponent(f.filename));
+    const pdfOut = f.outputs.find(o => o.toLowerCase().endsWith('.pdf'));
+    html += `<p class="compare">Original: <a href="${orig}">Download ${esc(f.filename)}</a>` +
+      (f.filename.toLowerCase().endsWith('.pdf')
+        ? ` · <a href="${orig}?view=1" target="_blank" rel="noopener">Open original<span class="visually-hidden"> (new tab)</span></a>` : '') +
+      (pdfOut ? ` · <a href="${FILE_URL.replace('__N__', encodeURIComponent(pdfOut))}?view=1" target="_blank" rel="noopener">Open remediated<span class="visually-hidden"> (new tab)</span></a>` : '') +
+      `</p>`;
   }
   if (f.errors.length) html += `<p class="errors">${f.errors.map(esc).join('<br>')}</p>`;
   if (f.status === 'done' && /\.pdf$/i.test(f.filename) && (/^Scanned/.test(f.route || '') || f.handwritten) && !(f.hw || []).length) {

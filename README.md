@@ -1,4 +1,4 @@
-# Remediation Workbench (version 10.14)
+# Remediation Workbench (version 10.15)
 
 
 [![Downloads](https://img.shields.io/github/downloads/MohdIliyas/CSU-Remediation-Workbench/total?color=2ea44f&label=Downloads&logo=github)](https://github.com/MohdIliyas/CSU-Remediation-Workbench/releases)
@@ -401,7 +401,15 @@ colour spaces (spot colours are matched by position only). TNTP Opportunity Myth
   backings remain the fallback for text on pictures.
 - Results: TNTP report 725 -> 0, Virtual Class Meeting 1 47 -> 0, Meeting 4 56 -> 0, quiz 10 -> 2.
 
+## Version 10.15 (folder upload, originals beside remediated files)
 
+- Upload a whole folder: "Choose a folder", or drop a folder on the drop area (subfolders included). Word,
+  PowerPoint and PDF files join the file list with their folder path in the name (Week1/Handout.pdf becomes
+  Week1_Handout.pdf), so files with the same name in different subfolders stay separate; other files are skipped
+  and counted.
+- Originals beside remediated files: each file card on the results page shows "Original: Download ..."; PDFs also
+  get "Open original" and "Open remediated", which open in new tabs to compare side by side.
+- "Download originals (.zip)" next to "Download all files and report (.zip)". Existing downloads are unchanged.
 
 ## License
 

@@ -373,3 +373,7 @@ fieldset.panel { border-radius: 14px; padding: 1.2rem 1.4rem; }
 .report-table th[scope=row] { overflow-wrap: anywhere; }
 @media print { .no-print, header.site, .steps-nav, footer { display: none !important; }
   .typed-file { break-inside: auto; } a { color: inherit; } }
+
+/* folder picking; originals beside remediated files */
+.folder-pick { margin: .6rem 0 0; display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.compare { margin: .4rem 0 0; font-size: .95rem; }

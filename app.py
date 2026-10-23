@@ -702,7 +702,40 @@ def delete_job(job_id):
 @app.get("/jobs/<job_id>/files/<path:name>")
 @require_auth
 def download_file(job_id, name):
-    return send_from_directory(os.path.join(job_dir(job_id), "out"), name, as_attachment=True)
+    view = request.args.get("view") == "1" and name.lower().endswith(".pdf")   # open in a browser tab
+    return send_from_directory(os.path.join(job_dir(job_id), "out"), name, as_attachment=not view)
+
+
+def _original_names(job):
+    return [f["filename"] for f in job["files"] if f.get("status") != "deleted"]
+
+
+@app.get("/jobs/<job_id>/originals/<path:name>")
+@require_auth
+def download_original(job_id, name):
+    """The file as it was uploaded (to compare with the remediated one)."""
+    job = load_job(job_id)
+    if name not in _original_names(job):
+        return Response("Not found", status=404)
+    view = request.args.get("view") == "1" and name.lower().endswith(".pdf")
+    return send_from_directory(os.path.join(job_dir(job_id), "in"), name, as_attachment=not view)
+
+
+@app.get("/jobs/<job_id>/originals.zip")
+@require_auth
+def download_originals(job_id):
+    job = load_job(job_id)
+    indir = os.path.join(job_dir(job_id), "in")
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for name in _original_names(job):
+            path = os.path.join(indir, name)
+            if os.path.isfile(path):
+                z.write(path, name)
+    buf.seek(0)
+    fname = f"originals-{job['label'] or job_id}.zip".replace(" ", "-")
+    return Response(buf.getvalue(), mimetype="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="{secure_filename(fname)}"'})
 
 
 @app.get("/jobs/<job_id>/report")
